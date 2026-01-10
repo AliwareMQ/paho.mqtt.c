@@ -783,9 +783,17 @@ typedef struct
 	 * Exists only if struct_version >= 5
 	 */
 	unsigned int protos_len;
+
+  int enable_ntls;
+  const char* sign_cert_file;
+  const char* sign_key_file;
+  const char* enc_cert_file;
+  const char* enc_key_file;
+
 } MQTTClient_SSLOptions;
 
-#define MQTTClient_SSLOptions_initializer { {'M', 'Q', 'T', 'S'}, 5, NULL, NULL, NULL, NULL, NULL, 1, MQTT_SSL_VERSION_DEFAULT, 0, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0 }
+//#define MQTTClient_SSLOptions_initializer { {'M', 'Q', 'T', 'S'}, 5, NULL, NULL, NULL, NULL, NULL, 1, MQTT_SSL_VERSION_DEFAULT, 0, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0 }
+#define MQTTClient_SSLOptions_initializer { {'M', 'Q', 'T', 'S'}, 5, NULL, NULL, NULL, NULL, NULL, 1, MQTT_SSL_VERSION_DEFAULT, 0, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0, 0, NULL, NULL, NULL, NULL }
 
 /**
   * MQTTClient_libraryInfo is used to store details relating to the currently used

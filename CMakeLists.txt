@@ -99,6 +99,14 @@ if(PAHO_BUILD_DEB_PACKAGE)
   set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS_POLICY ">=")
 endif()
 
+# 添加Tongsuo NTLS支持选项
+option(PAHO_WITH_TONGSUO_NTLS "Build with Tongsuo NTLS support" OFF)
+
+if(PAHO_WITH_TONGSUO_NTLS)
+    add_definitions(-DENABLE_TONGSUO_NTLS)
+    set(OPENSSL_ROOT_DIR "/home/admin/tongsuo" CACHE PATH "Tongsuo installation directory")
+endif()
+
 add_subdirectory(src)
 
 if(PAHO_BUILD_SAMPLES)

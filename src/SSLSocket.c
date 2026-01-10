@@ -550,6 +550,20 @@ int SSLSocket_createContext(networkHandles* net, MQTTClient_SSLOptions* opts)
 	FUNC_ENTRY;
 	if (net->ctx == NULL)
 	{
+
+#if defined(ENABLE_TONGSUO_NTLS)
+	if (opts->enable_ntls)
+	{
+		net->ctx = SSL_CTX_new(NTLS_client_method());
+		if (net->ctx)
+		{
+			SSL_CTX_enable_ntls(net->ctx);
+			Log(TRACE_PROTOCOL, 1, "NTLS (Tongsuo) mode enabled");
+		}
+	}
+else
+
+#endif
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
 		net->ctx = SSL_CTX_new(TLS_client_method());
 #else
@@ -598,6 +612,66 @@ int SSLSocket_createContext(networkHandles* net, MQTTClient_SSLOptions* opts)
 	SSL_CTX_set_security_level(net->ctx, 1);
 #endif
 */
+
+#if defined(ENABLE_TONGSUO_NTLS)
+    if (opts->enable_ntls)
+    {
+        if (opts->sign_key_file)
+        {
+            if (!SSL_CTX_use_sign_PrivateKey_file(net->ctx, opts->sign_key_file, SSL_FILETYPE_PEM))
+            {
+                SSLSocket_error("SSL_CTX_use_sign_PrivateKey_file", NULL, net->socket, rc, 
+                    opts->ssl_error_cb, opts->ssl_error_context);
+                goto free_ctx;
+            }
+        }
+        
+        if (opts->sign_cert_file)
+        {
+            if (!SSL_CTX_use_sign_certificate_file(net->ctx, opts->sign_cert_file, SSL_FILETYPE_PEM))
+            {
+                SSLSocket_error("SSL_CTX_use_sign_certificate_file", NULL, net->socket, rc, 
+                    opts->ssl_error_cb, opts->ssl_error_context);
+                goto free_ctx;
+            }
+        }
+        
+        if (opts->enc_key_file)
+        {
+            if (!SSL_CTX_use_enc_PrivateKey_file(net->ctx, opts->enc_key_file, SSL_FILETYPE_PEM))
+            {
+                SSLSocket_error("SSL_CTX_use_enc_PrivateKey_file", NULL, net->socket, rc, 
+                    opts->ssl_error_cb, opts->ssl_error_context);
+                goto free_ctx;
+            }
+        }
+        
+        if (opts->enc_cert_file)
+        {
+            if (!SSL_CTX_use_enc_certificate_file(net->ctx, opts->enc_cert_file, SSL_FILETYPE_PEM))
+            {
+                SSLSocket_error("SSL_CTX_use_enc_certificate_file", NULL, net->socket, rc, 
+                    opts->ssl_error_cb, opts->ssl_error_context);
+                goto free_ctx;
+            }
+        }
+        
+        if (opts->enabledCipherSuites)
+        {
+            if (SSL_CTX_set_cipher_list(net->ctx, opts->enabledCipherSuites) <= 0)
+            {
+                SSLSocket_error("SSL_CTX_set_cipher_list", NULL, net->socket, rc, 
+                    opts->ssl_error_cb, opts->ssl_error_context);
+                goto free_ctx;
+            }
+        }
+        else
+        {
+            SSL_CTX_set_cipher_list(net->ctx, "ECC-SM2-WITH-SM4-SM3:ECDHE-SM2-WITH-SM4-SM3");
+        }
+    }
+    else
+#endif
 
 	if (opts->keyStore)
 	{
@@ -656,7 +730,7 @@ int SSLSocket_createContext(networkHandles* net, MQTTClient_SSLOptions* opts)
 		}
 	}
 
-	if (opts->enabledCipherSuites)
+	if (opts->enabledCipherSuites  && !opts->enable_ntls)
 	{
 		if ((rc = SSL_CTX_set_cipher_list(net->ctx, opts->enabledCipherSuites)) != 1)
 		{
