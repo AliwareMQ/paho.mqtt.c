@@ -667,7 +667,7 @@ else
         }
         else
         {
-            SSL_CTX_set_cipher_list(net->ctx, "ECC-SM2-WITH-SM4-SM3:ECDHE-SM2-WITH-SM4-SM3");
+            SSL_CTX_set_cipher_list(net->ctx, "ECC-SM2-SM4-GCM-SM3:ECDHE-SM2-SM4-GCM-SM3");
         }
     }
     else
